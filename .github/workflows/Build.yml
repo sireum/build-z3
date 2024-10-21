@@ -1,0 +1,115 @@
+name: Build
+
+on:
+  push:
+  workflow_dispatch:
+
+env:
+  GMP_V: '6.3.0'
+  Z3_V: '4.13.3'
+
+jobs:
+  
+  windows:
+    if: "!contains(github.event.head_commit.message, 'skip win')"
+    strategy:
+      matrix:
+        runner: [windows-2019]
+    env:
+      PLATFORM_L: ${{ matrix.runner == 'windows-2019' && 'win-amd64' || 'win-arm64' }}
+      DESC: 'exe-static'
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Build
+        shell: cmd
+        run: |
+          call build-windows.bat
+      - name: Upload
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_name: sireum/rolling
+          repo_token: ${{ secrets.RELEASE_TOKEN }}
+          file: z3-${{ env.DESC }}-${{ env.Z3_V }}-${{ env.PLATFORM_L }}.zip
+          asset_name: z3-${{ env.DESC }}-${{ env.Z3_V }}-${{ env.PLATFORM_L }}.zip
+          tag: z3
+          overwrite: true
+
+  mac:
+    if: "!contains(github.event.head_commit.message, 'skip mac')"
+    strategy:
+      matrix:
+        runner: [macOS-14, macOS-13]
+    env:
+      PLATFORM_L: ${{ matrix.runner == 'macOS-13' && 'mac-amd64' || 'mac-arm64' }}
+      DESC: 'exe'
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Build
+        run: |
+          bash build-mac.sh
+      - name: Upload
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_name: sireum/rolling
+          repo_token: ${{ secrets.RELEASE_TOKEN }}
+          file: z3-${{ env.DESC }}-${{ env.Z3_V }}-${{ env.PLATFORM_L }}.zip
+          asset_name: z3-${{ env.DESC }}-${{ env.Z3_V }}-${{ env.PLATFORM_L }}.zip
+          tag: z3
+          overwrite: true
+
+  linux:
+    if: "!contains(github.event.head_commit.message, 'skip lin')"
+    strategy:
+      matrix:
+        arch: [x86_64, aarch64]
+        desc: [exe-static, exe-static-gmp]
+    env:
+      PLATFORM_L: ${{ matrix.arch == 'x86_64' && 'linux-amd64' || 'linux-arm64' }}
+      DESC: ${{ matrix.desc }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Env Vars
+        run: |
+          echo $GMP_V > gmp.ver
+          echo $Z3_V > z3.ver
+          echo $PLATFORM_L > platform.l
+          echo $DESC > desc
+      - name: Setup Alpine Linux
+        uses: jirutka/setup-alpine@v1
+        with:
+          branch: v3.20
+          arch: ${{ matrix.arch }}
+          packages: >
+            build-base
+            util-linux
+            coreutils
+            grep
+            findutils
+            cmake
+            extra-cmake-modules
+            pkgconf
+            lld
+            curl
+            tar
+            openmp-dev
+            bash
+            m4
+      - name: Build
+        shell: alpine.sh --root {0}
+        run: |
+          bash build-linux.sh
+      - name: Upload
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_name: sireum/rolling
+          repo_token: ${{ secrets.RELEASE_TOKEN }}
+          file: z3-${{ env.DESC }}-${{ env.Z3_V }}-${{ env.PLATFORM_L }}.zip
+          asset_name: z3-${{ env.DESC }}-${{ env.Z3_V }}-${{ env.PLATFORM_L }}.zip
+          tag: z3
+          overwrite: true
