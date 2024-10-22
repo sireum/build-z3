@@ -74,7 +74,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Setup Env Vars
+      - name: Build
         run: |
           echo $GMP_V > gmp.ver
           echo $Z3_V > z3.ver
@@ -130,6 +130,8 @@ jobs:
             openmp-dev
             bash
             m4
+            python3
+            zip
       - name: Build
         shell: alpine.sh --root {0}
         run: |
