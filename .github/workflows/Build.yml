@@ -41,9 +41,13 @@ jobs:
     strategy:
       matrix:
         runner: [macOS-14, macOS-13]
+        desc: [exe, exe-gmp]
+        exclude:
+          - runner: macOS-13
+            desc: exe-gmp
     env:
       PLATFORM_L: ${{ matrix.runner == 'macOS-13' && 'mac-amd64' || 'mac-arm64' }}
-      DESC: 'exe'
+      DESC: ${{ matrix.desc }}
     runs-on: ${{ matrix.runner }}
     steps:
       - name: Checkout

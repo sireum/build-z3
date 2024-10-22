@@ -3,7 +3,7 @@ export GMP_V=`cat gmp.ver`
 export Z3_V=`cat z3.ver`
 export PLATFORM_L=`cat platform.l`
 export DESC=`cat desc`
-rm -fR gmp.ver z3.ver platform.l desc
+rm -fR gmp.ver z3.ver platform.l desc z3* gmp*
 if [[ $DESC == *-gmp ]]; then
   USE_GMP=--gmp
   curl -sJLO https://ftp.gnu.org/gnu/gmp/gmp-$GMP_V.tar.xz
