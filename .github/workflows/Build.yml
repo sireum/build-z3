@@ -7,6 +7,7 @@ on:
 env:
   GMP_V: '6.3.0'
   Z3_V: '4.13.4'
+  COSMOCC_V: '4.0.2'
 
 jobs:
   
@@ -147,5 +148,36 @@ jobs:
           repo_token: ${{ secrets.RELEASE_TOKEN }}
           file: z3-${{ env.DESC }}-${{ env.Z3_V }}-${{ env.PLATFORM_L }}.zip
           asset_name: z3-${{ env.DESC }}-${{ env.Z3_V }}-${{ env.PLATFORM_L }}.zip
+          tag: z3
+          overwrite: true
+
+  cosmocc:
+    if: "!contains(github.event.head_commit.message, 'skip co')"
+    strategy:
+      matrix:
+        runner: [ubuntu-latest]
+        desc: [exe-static]
+    env:
+      PLATFORM_L: cosmocc
+      DESC: ${{ matrix.desc }}
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Build
+        run: |
+          echo $GMP_V > gmp.ver
+          echo $Z3_V > z3.ver
+          echo $COSMOCC_V > cosmocc.ver
+          echo $PLATFORM_L > platform.l
+          echo $DESC > desc
+          sudo bash build-linux.sh
+      - name: Upload
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_name: sireum/rolling
+          repo_token: ${{ secrets.RELEASE_TOKEN }}
+          file: z3-${{ env.DESC }}-${{ env.Z3_V }}-${{ env.PLATFORM_L }}.zip
+          asset_name: z3-${{ env.DESC }}-${{ env.Z3_V }}-${{ env.PLATFORM_L }}-${{ env.COSMOCC_V }}.zip
           tag: z3
           overwrite: true
