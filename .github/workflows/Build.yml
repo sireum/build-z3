@@ -6,7 +6,7 @@ on:
 
 env:
   GMP_V: '6.3.0'
-  Z3_V: '4.15.4'
+  Z3_V: '4.13.4'
   COSMOCC_V: '4.0.2'
 
 jobs:
