@@ -41,13 +41,13 @@ jobs:
     if: "contains(github.event.head_commit.message, 'build mac')"
     strategy:
       matrix:
-        runner: [macOS-14, macOS-13]
+        runner: [macOS-latest, macos-15-intel]
         desc: [exe, exe-gmp]
         exclude:
           - runner: macOS-13
             desc: exe-gmp
     env:
-      PLATFORM_L: ${{ matrix.runner == 'macOS-13' && 'mac-amd64' || 'mac-arm64' }}
+      PLATFORM_L: ${{ matrix.runner == 'macos-15-intel' && 'mac-amd64' || 'mac-arm64' }}
       DESC: ${{ matrix.desc }}
     runs-on: ${{ matrix.runner }}
     steps:
